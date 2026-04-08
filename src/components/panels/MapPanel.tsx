@@ -1,10 +1,16 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../../game/store.ts';
-import { MAP_WIDTH, MAP_HEIGHT, WORLD_MAP, TILE_COLORS } from '../../game/world.ts';
+import { MAP_WIDTH, MAP_HEIGHT, WORLD_MAP } from '../../game/world.ts';
+
+const MINI_COLORS: Record<string, string> = {
+  grass: '#3a6b1e', dirt: '#7a6543', stone: '#707070', water: '#1a4a7a',
+  sand: '#c4a86a', tree: '#1a5a0e', rock: '#555', bank: '#8b6914',
+  ge: '#c4a040', altar: '#8866aa', furnace: '#8a4400', anvil: '#444', portal: '#4466cc',
+};
 
 export function MapPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { state, dispatch } = useGame();
+  const { state } = useGame();
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -14,88 +20,80 @@ export function MapPanel() {
 
     const w = canvas.width;
     const h = canvas.height;
-    const tileW = w / MAP_WIDTH;
-    const tileH = h / MAP_HEIGHT;
+    const tw = w / MAP_WIDTH;
+    const th = h / MAP_HEIGHT;
 
-    ctx.fillStyle = '#0a0a15';
+    ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, w, h);
 
     for (let y = 0; y < MAP_HEIGHT; y++) {
       for (let x = 0; x < MAP_WIDTH; x++) {
         const tile = WORLD_MAP[y][x];
-        ctx.fillStyle = TILE_COLORS[tile.type] || '#2d5a1e';
-        ctx.fillRect(x * tileW, y * tileH, tileW + 0.5, tileH + 0.5);
+        ctx.fillStyle = MINI_COLORS[tile.type] || '#3a6b1e';
+        ctx.fillRect(x * tw, y * th, tw + 0.5, th + 0.5);
       }
     }
 
-    // NPCs
-    for (const npc of state.npcs) {
-      if (npc.hp <= 0) continue;
-      ctx.fillStyle = '#ef4444';
-      ctx.fillRect(npc.position.x * tileW - 1, npc.position.y * tileH - 1, 3, 3);
+    // Wilderness tint
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < MAP_WIDTH; x++) {
+        ctx.fillStyle = 'rgba(150,0,0,0.2)';
+        ctx.fillRect(x * tw, y * th, tw + 0.5, th + 0.5);
+      }
     }
 
-    // Remote players
+    // NPCs as red dots
+    for (const npc of state.npcs) {
+      if (npc.hp <= 0) continue;
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(npc.position.x * tw, npc.position.y * th, Math.max(2, tw), Math.max(2, th));
+    }
+
+    // Remote players as white dots
     state.remotePlayers.forEach(rp => {
       if (rp.pubkey === state.player.pubkey) return;
-      ctx.fillStyle = '#3b82f6';
-      ctx.fillRect(rp.position.x * tileW - 1, rp.position.y * tileH - 1, 3, 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(rp.position.x * tw, rp.position.y * th, Math.max(2, tw), Math.max(2, th));
     });
 
-    // Local player
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.arc(
-      state.player.position.x * tileW + tileW / 2,
-      state.player.position.y * tileH + tileH / 2,
-      4, 0, Math.PI * 2
-    );
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // Player as yellow dot with border
+    ctx.fillStyle = '#ffff00';
+    const px = state.player.position.x * tw;
+    const py = state.player.position.y * th;
+    ctx.fillRect(px - 1, py - 1, Math.max(3, tw + 2), Math.max(3, th + 2));
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(px - 1, py - 1, Math.max(3, tw + 2), Math.max(3, th + 2));
   }, [state]);
 
-  useEffect(() => {
-    render();
-  }, [render]);
-
-  const handleClick = (e: React.MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const tileW = canvas.width / MAP_WIDTH;
-    const tileH = canvas.height / MAP_HEIGHT;
-    const x = Math.floor((e.clientX - rect.left) / tileW);
-    const y = Math.floor((e.clientY - rect.top) / tileH);
-    dispatch({ type: 'LOG', message: `Map: (${x}, ${y})` });
-  };
+  useEffect(() => { render(); }, [render]);
 
   return (
     <div className="h-full flex flex-col">
-      <div className="px-3 py-2 border-b border-osrs-border">
-        <h2 className="text-sm font-bold text-osrs-gold">🗺️ World Map</h2>
+      <div className="px-2 py-1" style={{ borderBottom: '1px solid var(--osrs-border-dark)' }}>
+        <div className="osrs-font text-center" style={{ color: '#ff981f', fontSize: 9 }}>
+          World Map
+        </div>
       </div>
-      <div className="flex-1 p-2">
+      <div className="flex-1 p-2 flex flex-col">
         <canvas
           ref={canvasRef}
-          width={240}
-          height={240}
-          onClick={handleClick}
-          className="w-full h-auto rounded border border-osrs-border cursor-crosshair"
+          width={224}
+          height={224}
+          style={{ width: '100%', height: 'auto', border: '2px solid var(--osrs-border-dark)', cursor: 'crosshair', imageRendering: 'pixelated' }}
         />
-        <div className="mt-2 grid grid-cols-2 gap-1 text-[9px]">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 6, fontSize: 8 }}>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-osrs-gold" /> You
+            <div style={{ width: 6, height: 6, background: '#ffff00', border: '1px solid #000' }} /> You
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-blue-500" /> Players
+            <div style={{ width: 6, height: 6, background: '#ffffff' }} /> Players
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-red-500" /> NPCs
+            <div style={{ width: 6, height: 6, background: '#ff0000' }} /> NPCs
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-[#d4a017]" /> Grand Exchange
+            <div style={{ width: 6, height: 6, background: '#c4a040' }} /> G.E.
           </div>
         </div>
       </div>

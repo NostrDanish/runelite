@@ -7,40 +7,48 @@ export function MobileControls() {
     dispatch({ type: 'MOVE', dx, dy });
   };
 
+  const btnStyle: React.CSSProperties = {
+    width: 38,
+    height: 38,
+    background: 'linear-gradient(to bottom, #6b5c4a, #4a3f33)',
+    border: '1px solid #1b1610',
+    boxShadow: 'inset 1px 1px 0 rgba(255,255,255,0.1)',
+    color: '#ff981f',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    cursor: 'pointer',
+    touchAction: 'none',
+    borderRadius: 2,
+  };
+
   return (
-    <div className="absolute bottom-3 right-3 z-20">
-      <div className="grid grid-cols-3 gap-0.5" style={{ width: 108, height: 108 }}>
+    <div style={{ position: 'absolute', bottom: 12, right: 12, zIndex: 20, opacity: 0.85 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 40px)', gridTemplateRows: 'repeat(3, 40px)', gap: 1 }}>
         <div />
-        <DPadButton icon="▲" onClick={() => move(0, -1)} />
+        <button style={btnStyle} onPointerDown={(e) => { e.preventDefault(); move(0, -1); }}>
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 2 L12 10 L2 10 Z" fill="#ff981f" /></svg>
+        </button>
         <div />
-        <DPadButton icon="◀" onClick={() => move(-1, 0)} />
-        <DPadButton icon="●" onClick={() => {
-          dispatch({ type: 'END_COMBAT' });
-          dispatch({ type: 'STOP_SKILLING' });
-        }} small />
-        <DPadButton icon="▶" onClick={() => move(1, 0)} />
+        <button style={btnStyle} onPointerDown={(e) => { e.preventDefault(); move(-1, 0); }}>
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7 L10 2 L10 12 Z" fill="#ff981f" /></svg>
+        </button>
+        <button
+          style={{ ...btnStyle, fontSize: 8, fontFamily: "'Press Start 2P', monospace" }}
+          onPointerDown={(e) => { e.preventDefault(); dispatch({ type: 'END_COMBAT' }); dispatch({ type: 'STOP_SKILLING' }); }}
+        >
+          ESC
+        </button>
+        <button style={btnStyle} onPointerDown={(e) => { e.preventDefault(); move(1, 0); }}>
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M12 7 L4 2 L4 12 Z" fill="#ff981f" /></svg>
+        </button>
         <div />
-        <DPadButton icon="▼" onClick={() => move(0, 1)} />
+        <button style={btnStyle} onPointerDown={(e) => { e.preventDefault(); move(0, 1); }}>
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 12 L2 4 L12 4 Z" fill="#ff981f" /></svg>
+        </button>
         <div />
       </div>
     </div>
-  );
-}
-
-function DPadButton({ icon, onClick, small }: { icon: string; onClick: () => void; small?: boolean }) {
-  return (
-    <button
-      onPointerDown={e => {
-        e.preventDefault();
-        onClick();
-      }}
-      className={`rounded-lg border border-osrs-border bg-osrs-darker/80 backdrop-blur-sm
-        text-osrs-muted active:bg-osrs-gold/30 active:text-osrs-gold
-        flex items-center justify-center select-none touch-none
-        ${small ? 'text-xs' : 'text-sm'}`}
-      style={{ width: 34, height: 34 }}
-    >
-      {icon}
-    </button>
   );
 }

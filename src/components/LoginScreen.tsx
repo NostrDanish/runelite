@@ -1,30 +1,33 @@
+import { useState } from 'react';
 import { hasNostrExtension, getPublicKey } from '../nostr/auth.ts';
 import { loadProfile, loadPlayerState } from '../nostr/events.ts';
 import { useGame } from '../game/store.ts';
 
 export function LoginScreen() {
   const { dispatch } = useGame();
+  const [status, setStatus] = useState('');
 
   const handleLogin = async () => {
     if (!hasNostrExtension()) {
-      dispatch({ type: 'LOG', message: '❌ No Nostr extension found! Install nos2x, Alby, or similar.' });
+      setStatus('No Nostr extension found. Install nos2x, Alby, or similar.');
       return;
     }
 
+    setStatus('Connecting...');
     const pubkey = await getPublicKey();
     if (!pubkey) {
-      dispatch({ type: 'LOG', message: '❌ Failed to get public key.' });
+      setStatus('Failed to get public key.');
       return;
     }
 
-    // Load profile
+    setStatus('Loading profile...');
     const profile = await loadProfile(pubkey);
     const name = profile?.name || pubkey.slice(0, 12);
     const picture = profile?.picture || '';
 
     dispatch({ type: 'LOGIN', pubkey, name, picture });
 
-    // Load save
+    setStatus('Loading save data...');
     const save = await loadPlayerState(pubkey);
     if (save) {
       dispatch({ type: 'LOAD_SAVE', data: save });
@@ -41,54 +44,115 @@ export function LoginScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-osrs-darker/95 backdrop-blur-sm">
-      <div className="max-w-sm w-full mx-4 text-center">
-        {/* Logo */}
-        <div className="mb-6">
-          <div className="text-6xl mb-2 animate-float">⚔️</div>
-          <h1 className="text-3xl font-bold text-osrs-gold pixel-font tracking-wider">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 100,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(180deg, #0a0804 0%, #1b1610 30%, #2b2620 100%)',
+    }}>
+      {/* Decorative border */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        border: '3px solid #3e3529',
+        boxShadow: 'inset 0 0 80px rgba(0,0,0,0.5)',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ maxWidth: 360, width: '100%', padding: '0 20px', textAlign: 'center' }}>
+        {/* Title */}
+        <div style={{ marginBottom: 32 }}>
+          {/* Logo - stylized rune */}
+          <div style={{ marginBottom: 16 }}>
+            <svg width="80" height="80" viewBox="0 0 80 80" style={{ display: 'inline-block' }}>
+              <defs>
+                <linearGradient id="runeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffcc44" />
+                  <stop offset="100%" stopColor="#aa7700" />
+                </linearGradient>
+              </defs>
+              <circle cx="40" cy="40" r="36" fill="none" stroke="url(#runeGrad)" strokeWidth="3" />
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#6b5c4a" strokeWidth="1" />
+              <path d="M 25 55 L 40 15 L 55 55 Z" fill="none" stroke="url(#runeGrad)" strokeWidth="2.5" />
+              <path d="M 32 45 L 40 22 L 48 45 Z" fill="rgba(255,200,50,0.15)" />
+              <circle cx="40" cy="38" r="4" fill="#ffcc44" />
+              <path d="M 35 50 L 40 42 L 45 50" stroke="#aa7700" strokeWidth="1.5" fill="none" />
+            </svg>
+          </div>
+
+          <h1 className="osrs-font" style={{
+            fontSize: 18,
+            color: '#ff981f',
+            textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
+            letterSpacing: 3,
+          }}>
             RuneLite
           </h1>
-          <div className="text-sm text-osrs-gold/70 pixel-font">Web</div>
-          <p className="text-xs text-osrs-muted mt-2">
-            An OSRS-inspired RPG powered by Nostr & Lightning ⚡
-          </p>
+          <div className="osrs-font" style={{
+            fontSize: 10,
+            color: '#9f8a6f',
+            textShadow: '1px 1px 0 #000',
+            marginTop: 4,
+          }}>
+            Web
+          </div>
+          <div style={{
+            fontSize: 11,
+            color: '#6b5c4a',
+            marginTop: 12,
+            lineHeight: 1.5,
+          }}>
+            An OSRS-inspired MMORPG<br />powered by Nostr & Lightning
+          </div>
         </div>
 
-        {/* Login buttons */}
-        <div className="space-y-3">
+        {/* Login box */}
+        <div className="osrs-panel" style={{ padding: '20px 16px', marginBottom: 16 }}>
           <button
             onClick={handleLogin}
-            className="w-full py-3 px-6 bg-osrs-gold text-osrs-darker font-bold rounded-lg text-sm
-              hover:bg-osrs-gold-dark transition-all transform hover:scale-[1.02] active:scale-95
-              shadow-lg shadow-osrs-gold/20"
+            className="osrs-button w-full"
+            style={{
+              padding: '10px 16px',
+              fontSize: 10,
+              display: 'block',
+              marginBottom: 8,
+              background: 'linear-gradient(to bottom, #8b6914, #6b4904)',
+            }}
           >
-            🔑 Login with Nostr
+            Login with Nostr
           </button>
 
           <button
             onClick={handlePlayGuest}
-            className="w-full py-3 px-6 bg-osrs-panel text-osrs-text font-bold rounded-lg text-sm
-              hover:bg-osrs-border transition-all border border-osrs-border"
+            className="osrs-button w-full"
+            style={{ padding: '8px 16px', fontSize: 9, display: 'block' }}
           >
-            👤 Play as Guest
+            Play as Guest
           </button>
+
+          {status && (
+            <div className="osrs-font" style={{ color: '#ffff00', fontSize: 8, marginTop: 8, textAlign: 'center' }}>
+              {status}
+            </div>
+          )}
         </div>
 
         {/* Info */}
-        <div className="mt-6 text-[10px] text-osrs-muted space-y-1">
-          <p>🛡️ Login with Nostr to save progress, trade on the Grand Exchange, and chat.</p>
-          <p>💰 All economy runs on satoshis (sats). Trade items, earn from combat & skilling.</p>
-          <p>⚔️ WASD or Arrow keys to move. Click to interact. Tap on mobile.</p>
+        <div style={{ fontSize: 9, color: '#6b5c4a', lineHeight: 1.6 }}>
+          <div>Login with Nostr to save progress, trade, and chat.</div>
+          <div>WASD / Arrows to move. Click to interact.</div>
+          <div style={{ marginTop: 4 }}>All economy runs on satoshis.</div>
         </div>
 
         {/* Credits */}
-        <div className="mt-8 text-[9px] text-osrs-muted/50">
+        <div style={{ marginTop: 24, fontSize: 8, color: '#3e3529' }}>
           Vibed with{' '}
-          <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" className="underline hover:text-osrs-gold">
+          <a href="https://shakespeare.diy" target="_blank" rel="noopener noreferrer" style={{ color: '#6b5c4a', textDecoration: 'underline' }}>
             Shakespeare
           </a>
-          {' '}| Inspired by RuneLite/OSRS
         </div>
       </div>
     </div>

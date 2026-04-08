@@ -17,82 +17,71 @@ export function ChatPanel() {
   const handleSend = async () => {
     if (!message.trim()) return;
     if (!state.isLoggedIn) {
-      dispatch({ type: 'LOG', message: '❌ Login with Nostr to chat!' });
+      dispatch({ type: 'LOG', message: 'Login with Nostr to chat.' });
       return;
     }
-
     const type = tab === 'trade' ? 'trade' : 'public';
     await sendChatMessage(message.trim(), type);
     setMessage('');
   };
 
   const messages = tab === 'game'
-    ? state.gameLog.map((msg, i) => ({
-        id: `log-${i}`,
-        name: 'System',
-        content: msg,
-        timestamp: 0,
-        type: 'system' as const,
-      }))
-    : state.chatMessages
-        .filter(m => tab === 'trade' ? m.type === 'trade' : m.type === 'public')
-        .slice(-50);
+    ? state.gameLog.map((msg, i) => ({ id: `log-${i}`, name: '', content: msg, timestamp: 0, type: 'system' as const }))
+    : state.chatMessages.filter(m => tab === 'trade' ? m.type === 'trade' : m.type === 'public').slice(-50);
 
   return (
     <div className="h-full flex flex-col">
-      <div className="px-3 py-2 border-b border-osrs-border">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-osrs-gold">💬 Chat</h2>
-        </div>
-        <div className="flex gap-1 mt-1">
-          {(['game', 'public', 'trade'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize transition-colors
-                ${tab === t ? 'bg-osrs-gold text-osrs-darker' : 'bg-osrs-panel text-osrs-muted hover:text-osrs-text'}`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+      {/* Tab bar */}
+      <div className="flex" style={{ borderBottom: '1px solid var(--osrs-border-dark)' }}>
+        {(['game', 'public', 'trade'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`osrs-tab flex-1 osrs-font capitalize ${tab === t ? 'active' : ''}`}
+            style={{ fontSize: 7, padding: '3px 0' }}
+          >
+            {t === 'game' ? 'Game' : t === 'public' ? 'Public' : 'Trade'}
+          </button>
+        ))}
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 space-y-0.5">
+      {/* Messages */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-2 py-1"
+        style={{ background: 'var(--osrs-chat-bg)' }}
+      >
         {messages.map((msg, i) => (
-          <div key={msg.id || i} className="text-[11px] leading-relaxed">
-            {msg.type === 'system' || tab === 'game' ? (
-              <span className="text-osrs-muted">{msg.content}</span>
+          <div key={msg.id || i} style={{ fontSize: 10, lineHeight: 1.5, wordBreak: 'break-word' }}>
+            {tab === 'game' ? (
+              <span style={{ color: '#000' }}>{msg.content}</span>
             ) : (
               <>
-                <span className={msg.type === 'trade' ? 'text-osrs-purple font-bold' : 'text-osrs-cyan font-bold'}>
+                <span style={{ color: msg.type === 'trade' ? '#8800aa' : '#0000cc', fontWeight: 'bold' }}>
                   {msg.name}:
                 </span>{' '}
-                <span className="text-osrs-text">{msg.content}</span>
+                <span style={{ color: '#000' }}>{msg.content}</span>
               </>
             )}
           </div>
         ))}
       </div>
 
+      {/* Input */}
       {tab !== 'game' && (
-        <div className="p-2 border-t border-osrs-border">
-          <div className="flex gap-1">
-            <input
-              type="text"
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder={tab === 'trade' ? 'Trade message...' : 'Chat...'}
-              className="flex-1 bg-osrs-darker border border-osrs-border rounded px-2 py-1 text-xs text-osrs-text placeholder:text-osrs-muted/50 focus:outline-none focus:border-osrs-gold"
-            />
-            <button
-              onClick={handleSend}
-              className="px-3 py-1 bg-osrs-gold text-osrs-darker rounded text-xs font-bold hover:bg-osrs-gold-dark"
-            >
-              Send
-            </button>
-          </div>
+        <div className="flex" style={{ borderTop: '1px solid var(--osrs-border-dark)' }}>
+          <input
+            type="text"
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            placeholder={tab === 'trade' ? 'Trade message...' : 'Chat here...'}
+            className="osrs-input flex-1"
+            style={{ border: 'none', borderRight: '1px solid var(--osrs-border-dark)' }}
+          />
+          <button onClick={handleSend} className="osrs-button" style={{ padding: '4px 10px', fontSize: 8 }}>
+            Send
+          </button>
         </div>
       )}
     </div>

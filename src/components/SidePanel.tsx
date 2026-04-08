@@ -6,40 +6,53 @@ import { MarketPanel } from './panels/MarketPanel.tsx';
 import { ChatPanel } from './panels/ChatPanel.tsx';
 import { MapPanel } from './panels/MapPanel.tsx';
 
-const TABS: { id: string; icon: string; label: string }[] = [
-  { id: 'inventory', icon: '🎒', label: 'Inv' },
-  { id: 'equipment', icon: '🛡️', label: 'Equip' },
-  { id: 'stats', icon: '📊', label: 'Stats' },
-  { id: 'market', icon: '💰', label: 'GE' },
-  { id: 'chat', icon: '💬', label: 'Chat' },
-  { id: 'map', icon: '🗺️', label: 'Map' },
+const TABS: { id: string; label: string; row: number }[] = [
+  { id: 'stats', label: 'Stats', row: 0 },
+  { id: 'inventory', label: 'Inv', row: 0 },
+  { id: 'equipment', label: 'Equip', row: 0 },
+  { id: 'market', label: 'G.E.', row: 1 },
+  { id: 'chat', label: 'Chat', row: 1 },
+  { id: 'map', label: 'Map', row: 1 },
 ];
 
 export function SidePanel() {
   const { state, dispatch } = useGame();
 
+  const row0 = TABS.filter(t => t.row === 0);
+  const row1 = TABS.filter(t => t.row === 1);
+
   return (
-    <div className="h-full flex flex-col bg-osrs-dark border-l border-osrs-border">
-      {/* Tab bar */}
-      <div className="flex border-b border-osrs-border">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => dispatch({ type: 'SET_PANEL', panel: tab.id as any })}
-            className={`flex-1 py-1.5 text-center transition-colors
-              ${state.activePanel === tab.id
-                ? 'bg-osrs-panel border-b-2 border-osrs-gold'
-                : 'hover:bg-osrs-panel/50'
-              }`}
-          >
-            <span className="text-sm">{tab.icon}</span>
-            <span className="text-[8px] block text-osrs-muted">{tab.label}</span>
-          </button>
-        ))}
+    <div className="h-full flex flex-col" style={{ background: 'var(--osrs-bg)' }}>
+      {/* Tab rows */}
+      <div style={{ background: 'var(--osrs-dark)' }}>
+        <div className="flex">
+          {row0.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => dispatch({ type: 'SET_PANEL', panel: tab.id as any })}
+              className={`osrs-tab flex-1 py-1.5 text-center osrs-font ${state.activePanel === tab.id ? 'active' : ''}`}
+              style={{ fontSize: 8 }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex">
+          {row1.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => dispatch({ type: 'SET_PANEL', panel: tab.id as any })}
+              className={`osrs-tab flex-1 py-1.5 text-center osrs-font ${state.activePanel === tab.id ? 'active' : ''}`}
+              style={{ fontSize: 8 }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Panel content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" style={{ background: 'var(--osrs-panel)' }}>
         {state.activePanel === 'stats' && <StatsPanel />}
         {state.activePanel === 'inventory' && <InventoryPanel />}
         {state.activePanel === 'equipment' && <EquipmentPanel />}

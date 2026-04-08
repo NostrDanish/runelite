@@ -8,85 +8,98 @@ export function HUD() {
   const combatLevel = getCombatLevel(player.skills);
   const area = getAreaLabel(player.position);
 
+  const hpPct = player.hp / player.maxHp;
+  const prayPct = player.prayer / player.maxPrayer;
+
   return (
     <>
-      {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-2 py-1 bg-osrs-darker/80 backdrop-blur-sm border-b border-osrs-border z-10">
-        {/* Player info */}
-        <div className="flex items-center gap-2">
-          {player.picture ? (
-            <img src={player.picture} alt="" className="w-6 h-6 rounded-full border border-osrs-gold" />
-          ) : (
-            <div className="w-6 h-6 rounded-full bg-osrs-panel border border-osrs-gold flex items-center justify-center text-xs">
-              ⚔️
-            </div>
-          )}
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-osrs-gold leading-tight">{player.name}</span>
-            <span className="text-[10px] text-osrs-muted leading-tight">
-              Combat {combatLevel} | Total {player.totalLevel}
-            </span>
+      {/* Minimap area - top right */}
+      <div className="absolute top-2 right-2 z-10" style={{ width: state.isMobile ? 100 : 140 }}>
+        <div className="osrs-panel p-1">
+          <div className="text-center osrs-font" style={{ fontSize: 8, color: '#ff981f' }}>
+            {area}
           </div>
-        </div>
-
-        {/* Location */}
-        <div className="text-xs text-osrs-muted pixel-font">
-          {area}
-        </div>
-
-        {/* Sats balance */}
-        <div className="flex items-center gap-1 bg-osrs-panel/60 rounded px-2 py-0.5 border border-osrs-border">
-          <span className="text-osrs-gold text-sm">₿</span>
-          <span className="text-xs font-bold text-osrs-gold">{player.balance.toLocaleString()}</span>
-          <span className="text-[10px] text-osrs-muted">sats</span>
-        </div>
-      </div>
-
-      {/* HP / Prayer orbs - left side */}
-      <div className="absolute left-2 top-12 flex flex-col gap-1 z-10">
-        {/* HP */}
-        <div className="flex items-center gap-1 bg-osrs-darker/80 rounded-lg px-2 py-1 border border-osrs-border backdrop-blur-sm">
-          <span className="text-sm">❤️</span>
-          <div className="flex flex-col">
-            <div className="w-14 h-2 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-hp-red rounded-full transition-all duration-300"
-                style={{ width: `${(player.hp / player.maxHp) * 100}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-center text-osrs-text">
-              {player.hp}/{player.maxHp}
-            </span>
-          </div>
-        </div>
-
-        {/* Prayer */}
-        <div className="flex items-center gap-1 bg-osrs-darker/80 rounded-lg px-2 py-1 border border-osrs-border backdrop-blur-sm">
-          <span className="text-sm">🙏</span>
-          <div className="flex flex-col">
-            <div className="w-14 h-2 bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-prayer-cyan rounded-full transition-all duration-300"
-                style={{ width: `${(player.prayer / player.maxPrayer) * 100}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-center text-osrs-text">
-              {player.prayer}/{player.maxPrayer}
-            </span>
+          <div className="text-center" style={{ fontSize: 8, color: '#9f8a6f' }}>
+            ({player.position.x}, {player.position.y})
           </div>
         </div>
       </div>
 
-      {/* Combat target info */}
+      {/* Orbs - left side */}
+      <div className="absolute left-2 z-10 flex flex-col gap-1" style={{ top: state.isMobile ? 8 : 12 }}>
+        {/* HP Orb */}
+        <Orb
+          value={player.hp}
+          max={player.maxHp}
+          color={hpPct > 0.5 ? '#00cc00' : hpPct > 0.25 ? '#cccc00' : '#cc0000'}
+          bgColor="#300"
+          label="HP"
+          icon="+"
+          iconColor="#cc0000"
+        />
+        {/* Prayer Orb */}
+        <Orb
+          value={player.prayer}
+          max={player.maxPrayer}
+          color="#00cccc"
+          bgColor="#003333"
+          label="Pray"
+          icon="✦"
+          iconColor="#00cccc"
+        />
+        {/* Sats */}
+        <div className="osrs-panel flex items-center gap-1 px-2 py-1" style={{ minWidth: 70 }}>
+          <span style={{ color: '#ffaa00', fontSize: 12, fontWeight: 'bold' }}>₿</span>
+          <div>
+            <div className="osrs-font" style={{ color: '#ffff00', fontSize: 9 }}>
+              {player.balance.toLocaleString()}
+            </div>
+            <div style={{ fontSize: 7, color: '#9f8a6f' }}>sats</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Combat target overlay */}
       {player.combat.inCombat && player.combat.targetNpcId && (
         <CombatOverlay npcId={player.combat.targetNpcId} />
       )}
-
-      {/* Coordinates */}
-      <div className="absolute bottom-1 left-1 text-[10px] text-osrs-muted/50 z-10 pixel-font">
-        ({player.position.x}, {player.position.y})
-      </div>
     </>
+  );
+}
+
+function Orb({ value, max, color, bgColor, label, icon, iconColor }: {
+  value: number; max: number; color: string; bgColor: string; label: string; icon: string; iconColor: string;
+}) {
+  const pct = max > 0 ? value / max : 0;
+  const size = 38;
+  const radius = 15;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <div className="osrs-panel flex items-center gap-1 px-1 py-1" style={{ minWidth: 70 }}>
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {/* Background circle */}
+          <circle cx={size / 2} cy={size / 2} r={radius} fill={bgColor} stroke="#1b1610" strokeWidth="2" />
+          {/* Progress arc */}
+          <circle
+            cx={size / 2} cy={size / 2} r={radius}
+            fill="none" stroke={color} strokeWidth="3"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - pct)}
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ color: iconColor, fontSize: 14, fontWeight: 'bold' }}>
+          {icon}
+        </div>
+      </div>
+      <div>
+        <div className="osrs-font" style={{ color, fontSize: 9 }}>{value}/{max}</div>
+        <div style={{ fontSize: 7, color: '#9f8a6f' }}>{label}</div>
+      </div>
+    </div>
   );
 }
 
@@ -96,21 +109,23 @@ function CombatOverlay({ npcId }: { npcId: string }) {
   if (!npc) return null;
 
   return (
-    <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-osrs-darker/90 border border-red-900 rounded-lg px-4 py-2 z-20 animate-slide-up backdrop-blur-sm">
-      <div className="flex items-center gap-2">
-        <span className="text-lg">{npc.icon}</span>
+    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 osrs-panel px-4 py-2 anim-slideUp"
+      style={{ borderColor: '#cc0000', boxShadow: 'inset 0 0 8px rgba(200,0,0,0.3)' }}>
+      <div className="flex items-center gap-3">
         <div>
-          <div className="text-xs font-bold text-osrs-red">{npc.name}</div>
-          <div className="text-[10px] text-osrs-muted">Level {npc.combatLevel}</div>
+          <div className="osrs-font" style={{ color: '#ff4444', fontSize: 10 }}>{npc.name}</div>
+          <div style={{ color: '#9f8a6f', fontSize: 9 }}>Level {npc.combatLevel}</div>
         </div>
-        <div className="flex flex-col items-end ml-4">
-          <div className="w-20 h-2 bg-gray-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-hp-red rounded-full transition-all duration-200"
-              style={{ width: `${(npc.hp / npc.maxHp) * 100}%` }}
-            />
+        <div className="flex flex-col items-end">
+          <div style={{ width: 80, height: 8, background: '#300', border: '1px solid #1b1610' }}>
+            <div style={{
+              width: `${(npc.hp / npc.maxHp) * 100}%`,
+              height: '100%',
+              background: npc.hp / npc.maxHp > 0.5 ? '#00cc00' : npc.hp / npc.maxHp > 0.25 ? '#cccc00' : '#cc0000',
+              transition: 'width 0.2s',
+            }} />
           </div>
-          <span className="text-[10px] text-osrs-red">{npc.hp}/{npc.maxHp}</span>
+          <span className="osrs-font" style={{ color: '#ff4444', fontSize: 8 }}>{npc.hp}/{npc.maxHp}</span>
         </div>
       </div>
     </div>
