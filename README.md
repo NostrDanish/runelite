@@ -1,25 +1,34 @@
-![](https://runelite.net/img/logo.png)
-# runelite [![CI](https://github.com/runelite/runelite/workflows/CI/badge.svg)](https://github.com/runelite/runelite/actions?query=workflow%3ACI+branch%3Amaster) [![Discord](https://img.shields.io/discord/301497432909414422.svg)](https://discord.gg/ArdAhnN)
+# RuneLite Web
 
-RuneLite is a free, open source OldSchool RuneScape client.
+An OSRS-inspired MMORPG running entirely on Nostr with Lightning sats economy.
 
-If you have any questions, please join our IRC channel on [irc.rizon.net #runelite](http://qchat.rizon.net/?channels=runelite&uio=d4) or alternatively our [Discord](https://runelite.net/discord) server.
+[![Edit with Shakespeare](https://shakespeare.diy/badge.svg)](https://shakespeare.diy/clone?url=https%3A%2F%2Fgithub.com%2FNostrDanish%2Frunelite.git)
 
-## Project Layout
+## Features
 
-- [cache](cache/src/main/java/net/runelite/cache) - Libraries used for reading/writing cache files, as well as the data in it
-- [runelite-api](runelite-api/src/main/java/net/runelite/api) - RuneLite API, interfaces for accessing the client
-- [runelite-client](runelite-client/src/main/java/net/runelite/client) - Game client with plugins
+- **Nostr Login** - Sign in with your Nostr identity (NIP-07), save progress to relays
+- **Full Skills System** - Attack, Defence, Strength, Hitpoints, Ranged, Prayer, Magic, Cooking, Woodcutting, Fishing, Firemaking, Crafting, Smithing, Mining, Runecraft
+- **Combat** - Fight NPCs from Chickens to Lesser Demons, earn XP and loot
+- **Grand Exchange** - Marketplace powered by Nostr events, priced in sats
+- **Multiplayer** - See other players on the map, public and trade chat via Nostr
+- **Inventory & Equipment** - 28-slot inventory, equip weapons and armor for combat bonuses
+- **Sats Economy** - Everything priced in satoshis, earn from combat drops and skilling
+- **Responsive** - Works on desktop (WASD/arrows) and mobile (d-pad + tap)
+- **Auto-save** - Progress saved to Nostr relays every 60 seconds
 
-## Usage
+## How to Play
 
-Open the project in your IDE as a Gradle project, and then run the RuneLite class in runelite-client.  
-For more information visit the [RuneLite Wiki](https://github.com/runelite/runelite/wiki).
+1. Login with Nostr or play as guest
+2. Use WASD/arrows to move (or d-pad on mobile)
+3. Click NPCs to attack, click trees/rocks/fishing spots to skill
+4. Open side panels for inventory, stats, equipment, Grand Exchange, chat, and map
 
-### License
+## Tech Stack
 
-RuneLite is licensed under the BSD 2-clause license. See the license header in the respective file to be sure.
-
-## Contribute and Develop
-
-Please view our [Developer Guide](https://github.com/runelite/runelite/wiki/Developer-Guide) on the RuneLite Wiki.
+- React + TypeScript
+- HTML5 Canvas for game rendering
+- Tailwind CSS for UI
+- nostr-tools for Nostr protocol
+- NIP-07 for authentication
+- NIP-78 (kind 30078) for game data storage
+- Kind 1 for chat messages

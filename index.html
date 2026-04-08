@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RuneLite Web - Nostr MMORPG</title>
+  <meta name="description" content="An OSRS-inspired MMORPG running on Nostr with Lightning sats economy" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'osrs-dark': '#1a1a2e',
+            'osrs-darker': '#0f0f1a',
+            'osrs-panel': '#2a2a3e',
+            'osrs-border': '#3a3a4e',
+            'osrs-gold': '#f59e0b',
+            'osrs-gold-dark': '#b45309',
+            'osrs-green': '#22c55e',
+            'osrs-red': '#ef4444',
+            'osrs-blue': '#3b82f6',
+            'osrs-purple': '#7c3aed',
+            'osrs-cyan': '#06b6d4',
+            'osrs-text': '#e2e8f0',
+            'osrs-muted': '#94a3b8',
+            'hp-red': '#dc2626',
+            'prayer-cyan': '#06b6d4',
+            'xp-green': '#4ade80',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
